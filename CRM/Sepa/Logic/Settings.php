@@ -219,7 +219,7 @@ class CRM_Sepa_Logic_Settings {
    */
   static function sepa_cycle_day_list($value) {
     if (!empty($value)) {
-      $days = split(',', $value);
+      $days = explode(',', $value);
       foreach ($days as $day) {
         if (!is_numeric($day) || $day < 1 || $day > 28) {
           return false;
@@ -227,5 +227,19 @@ class CRM_Sepa_Logic_Settings {
       }
     }
     return true;
-  }  
+  }
+
+  /**
+   * Will check if the "Little BIC Extension" is accessible in the current user context
+   * 
+   * @return bool TRUE if it is
+   */
+  public static function isLittleBicExtensionAccessible() {
+    try {
+      $result = civicrm_api3('Bic', 'findbyiban', array('iban' => 'TEST'));
+      return empty($result['is_error']);
+    } catch (Exception $e) {
+      return FALSE;
+    }
+  }
 }
