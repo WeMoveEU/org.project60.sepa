@@ -15,16 +15,46 @@
 require_once 'sepa.civix.php';
 require_once 'sepa_pp_sdd.php';
 
-
-function sepa_civicrm_pageRun( &$page ) {
-  if (get_class($page) == "CRM_Contact_Page_View_Summary") {
-    // mods for summary view
-    CRM_Core_Region::instance('page-body')->add(array(
-      'template' => 'CRM/Contact/Page/View/Summary.sepa.tpl'
-    ));
-
-  } elseif (get_class($page) == "CRM_Contribute_Page_Tab") {
-    // single contribuion view
+/**
+ * @param $page
+ *
+ * @throws \CiviCRM_API3_Exception
+ */
+function sepa_civicrm_pageRun(&$page) {
+  if (get_class($page) == "CRM_Contribute_Page_Tab") {
+    $recurRows = $page->getTemplate()->get_template_vars('recurRows');
+    if ($recurRows) {
+      $params = [
+        'entity_id' => ['IN' => array_keys($recurRows)],
+        'type' => 'RCUR',
+      ];
+      $result = civicrm_api3('SepaMandate', 'get', $params);
+      $map = [];
+      foreach ($result['values'] as $mandateId => $mandate) {
+        $map[$mandate['entity_id']] = $mandateId;
+      }
+      $action = CRM_Core_Action::VIEW + CRM_Core_Action::UPDATE;
+      foreach ($recurRows as $id => $row) {
+        if (array_key_exists($id, $map)) {
+          $recurRows[$id]['action'] = CRM_Core_Action::formLink(
+            CRM_Sepa_Logic_Links::recurring(),
+            $action,
+            [
+              'mid' => $map[$id],
+              'cid' => $row['contact_id'],
+              'crid' => $id,
+              'cxt' => 'contribution',
+            ],
+            ts('more'),
+            FALSE,
+            'contribution.selector.recurring',
+            'Contribution',
+            $id
+          );
+        }
+      }
+      $page->assign('recurRows', $recurRows);
+    }
 
     if (!CRM_Sepa_Logic_Settings::isSDD(array('payment_instrument_id' => $page->getTemplate()->get_template_vars('payment_instrument_id'))))
       return;
@@ -688,5 +718,15 @@ function sepa_civicrm_tokenValues(&$values, $cids, $job = null, $tokens = array(
     }
   } catch (Exception $e) {
     // probably just a minor issue, see SEPA-461
+  }
+}
+
+function sepa_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
+  if ($formName == 'CRM_Contribute_Page_Tab') {
+    $possibleTpl = 'CRM/Contribute/Page/Tab.sepa.tpl';
+    $template = CRM_Core_Smarty::singleton();
+    if ($template->template_exists($possibleTpl)) {
+      $tplName = $possibleTpl;
+    }
   }
 }
