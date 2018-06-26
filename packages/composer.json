@@ -1,0 +1,5 @@
+{
+  "require": {
+    "ashtokalo/php-translit": "dev-master"
+  }
+}
