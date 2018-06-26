@@ -13,6 +13,7 @@
 | written permission from the original author(s).        |
 +--------------------------------------------------------*/
 
+require_once 'packages/vendor/ashtokalo/php-translit/Translit.php';
 
 /**
  * File for the CiviCRM sepa_transaction_group business logic
@@ -118,6 +119,12 @@ class CRM_Sepa_BAO_SEPATransactionGroup extends CRM_Sepa_DAO_SEPATransactionGrou
       if ($creditor['creditor_type'] == 'SEPA') {
         $t["iban"] = str_replace(array(' ','-'), '', $t["iban"]);
         $t['ctry'] = substr($t["iban"], 0, 2);
+        $t["display_name"] = Translit::object()->convert($t["display_name"], 'all');
+        // try to convert the name into a more acceptable format
+        if (function_exists("iconv")){
+          $t["display_name"]=iconv("UTF-8", "ASCII//TRANSLIT", $t["display_name"]);
+        }
+        //french banks like utf8 as long as it's ascii7 only
       }
 
       // make some fields comply with SEPA standards
