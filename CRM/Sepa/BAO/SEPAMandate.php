@@ -419,8 +419,10 @@ class CRM_Sepa_BAO_SEPAMandate extends CRM_Sepa_DAO_SEPAMandate {
     $obsolete_ids = array();
     $deleted_ids = array();
     $obsolete_query = "
-    SELECT id
-    FROM civicrm_contribution
+    SELECT c.id
+    FROM civicrm_contribution c
+      JOIN civicrm_sdd_contribution_txgroup ctx ON ctx.contribution_id = c.id
+      JOIN civicrm_sdd_txgroup tx ON tx.id = ctx.txgroup_id AND tx.status_id = 1
     WHERE receive_date > %1
       AND contribution_recur_id = %2
       AND contribution_status_id IN (%3, %4);";
