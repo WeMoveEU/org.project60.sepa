@@ -41,7 +41,7 @@ function sepa_civicrm_pageRun(&$page) {
             $action,
             [
               'mid' => $map[$id],
-              'cid' => $row['contactId'],
+              'cid' => $row['contact_id'],
               'crid' => $id,
               'cxt' => 'contribution',
             ],
