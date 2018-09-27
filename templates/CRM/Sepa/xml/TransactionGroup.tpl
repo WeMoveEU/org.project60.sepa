@@ -62,7 +62,9 @@
         </DrctDbtTx>
         <DbtrAgt>
           <FinInstnId>
-            <BIC>{$contribution.bic}</BIC>
+            <Othr>
+               <Id>NOTPROVIDED</Id>
+            </Othr>
           </FinInstnId>
         </DbtrAgt>
         <Dbtr>
