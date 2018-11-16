@@ -121,10 +121,19 @@ class CRM_Sepa_BAO_SEPATransactionGroup extends CRM_Sepa_DAO_SEPATransactionGrou
         $t['ctry'] = substr($t["iban"], 0, 2);
         $t["display_name"] = Translit::object()->convert($t["display_name"], 'all');
         // try to convert the name into a more acceptable format
+        $transliteratedName = Translit::object()->convert($t["display_name"], 'all');
         if (function_exists("iconv")){
+          // french banks like utf8 as long as it's ascii7 only
           $t["display_name"]=iconv("UTF-8", "ASCII//TRANSLIT", $t["display_name"]);
+          $transliteratedName = iconv("UTF-8", "ASCII//TRANSLIT", $transliteratedName);
+          // ...but to be sure, replace any remainig illegit characters with '?'
+          $t["display_name"] = preg_replace("/[^ 0-9a-zA-Z':?,\-(+.)\/\"]/", '?', $t["display_name"]);
+          $transliteratedName = preg_replace("/[^ 0-9a-zA-Z':?,\-(+.)\/\"]/", '?', $transliteratedName);
         }
-        //french banks like utf8 as long as it's ascii7 only
+        if ($transliteratedName != $t["display_name"]) {
+          $t["display_name"] = $transliteratedName;
+          CRM_Sepa_Logic_Note::transliteratedName($t['contact_id'], $transliteratedName);
+        }
       }
 
       // make some fields comply with SEPA standards
