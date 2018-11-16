@@ -100,15 +100,20 @@ class CRM_Sepa_BAO_SEPATransactionGroup extends CRM_Sepa_DAO_SEPATransactionGrou
       $t['id'] = $t['cid'];  // see https://github.com/Project60/org.project60.sepa/issues/385
       $t["iban"]=str_replace(array(' ','-'), '', $t["iban"]);
 
-      $t["display_name"] = Translit::object()->convert($t["display_name"], 'all');
+      $transliteratedName = Translit::object()->convert($t["display_name"], 'all');
       // try to convert the name into a more acceptable format
       if (function_exists("iconv")){
-        $t["display_name"]=iconv("UTF-8", "ASCII//TRANSLIT", $t["display_name"]);
-        //french banks like utf8 as long as it's ascii7 only
+        // french banks like utf8 as long as it's ascii7 only
+        $t["display_name"] = iconv("UTF-8", "ASCII//TRANSLIT", $t["display_name"]);
+        $transliteratedName = iconv("UTF-8", "ASCII//TRANSLIT", $transliteratedName);
+        // ...but to be sure, replace any remainig illegit characters with '?'
+        $t["display_name"] = preg_replace("/[^ 0-9a-zA-Z':?,\-(+.)\/\"]/", '?', $t["display_name"]);
+        $transliteratedName = preg_replace("/[^ 0-9a-zA-Z':?,\-(+.)\/\"]/", '?', $transliteratedName);
       }
-
-      // ...but to be sure, replace any remainig illegit characters with '?'
-      $t["display_name"] = preg_replace("/[^ 0-9a-zA-Z':?,\-(+.)\/\"]/", '?', $t["display_name"]);
+      if ($transliteratedName != $t["display_name"]) {
+        $t["display_name"] = $transliteratedName;
+        CRM_Sepa_Logic_Note::transliteratedName($t['contact_id'], $transliteratedName);
+      }
 
       // create an individual transaction message
       $t["message"] = CRM_Sepa_Logic_Settings::getTransactionMessage($t, $creditor);
