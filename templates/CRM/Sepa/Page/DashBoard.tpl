@@ -153,11 +153,11 @@
 
 {literal}
 <style>
-  tr.submit_missed {background-color: #EE0000AA;}
-  tr.submit_urgently {background-color: #AC6700AA;}
-  tr.submit_soon {background-color: #0165FFAA;}
-  tr.submit_later {background-color: #008300AA;}
-  tr.submit_closed {background-color: #00830033;}
+  tr.submit_missed {background-color: #ee000066; color: darkred;}
+  tr.submit_urgently {background-color: #AC670069; color: saddlebrown;}
+  tr.submit_soon {background-color: #0165FF69; color: darkslateblue;}
+  tr.submit_later {background-color: #00830069; color: darkgreen;}
+  tr.submit_closed {background-color: #00830033; color: seagreen;}
 </style>
 {/literal}
 
