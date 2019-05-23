@@ -120,7 +120,22 @@ class CRM_Sepa_Page_MandateTab extends CRM_Core_Page {
       WHERE civicrm_sdd_mandate.contact_id = %1
         AND civicrm_sdd_mandate.type = 'RCUR'
         AND civicrm_sdd_mandate.entity_table = 'civicrm_contribution_recur'
-      GROUP BY civicrm_sdd_mandate.id
+      GROUP BY civicrm_sdd_mandate.id,
+         civicrm_sdd_mandate.status,
+         civicrm_sdd_mandate.reference,
+         cancel_reason.note,
+         civicrm_financial_type.name,
+         civicrm_campaign.title,
+         civicrm_contribution_recur.frequency_interval,
+         civicrm_contribution_recur.frequency_unit,
+         civicrm_contribution_recur.currency,
+         civicrm_contribution_recur.amount,
+         civicrm_contribution_recur.id,
+         civicrm_contribution_recur.start_date,
+         civicrm_contribution_recur.end_date,
+         civicrm_contribution_recur.next_sched_contribution_date,
+         last.receive_date,
+         last.cancel_reason
       ORDER BY civicrm_contribution_recur.start_date DESC, civicrm_sdd_mandate.id DESC;";
 
     $mandate_ids = array();
@@ -180,7 +195,8 @@ class CRM_Sepa_Page_MandateTab extends CRM_Core_Page {
           AND civicrm_sdd_mandate.type = 'RCUR'
           AND civicrm_sdd_mandate.entity_table = 'civicrm_contribution_recur'
           AND civicrm_contribution.id IS NOT NULL
-        GROUP BY civicrm_sdd_mandate.id
+        GROUP BY civicrm_sdd_mandate.id,
+                 civicrm_contribution.receive_date
         ORDER BY civicrm_contribution.receive_date;";
       $fail_query = CRM_Core_DAO::executeQuery($fail_sequence);
       while ($fail_query->fetch()) {
