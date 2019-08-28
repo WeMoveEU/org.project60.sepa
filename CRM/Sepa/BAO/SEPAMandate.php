@@ -384,6 +384,12 @@ class CRM_Sepa_BAO_SEPAMandate extends CRM_Sepa_DAO_SEPAMandate {
       // FIXME: cancel_reason does not exist in contribution_recur!!
       //$query['cancel_reason'] = $cancel_reason;
       $query['cancel_date'] = $query['end_date'];
+      $cancelParams = [
+        'id' => $contribution_id,
+        'cancel_reason'=> $cancel_reason,
+        'processor_message'=> $cancel_reason,
+      ];
+      CRM_Contribute_BAO_ContributionRecur::cancelRecurContribution($cancelParams);
     }
 
     $result = civicrm_api("ContributionRecur", "create", $query);
