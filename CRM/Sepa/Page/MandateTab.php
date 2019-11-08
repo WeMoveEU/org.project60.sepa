@@ -88,6 +88,7 @@ class CRM_Sepa_Page_MandateTab extends CRM_Core_Page {
     $rcur_list = array();
     $rcur_query = "
       SELECT
+        DISTINCTROW
         civicrm_sdd_mandate.id                                  AS mandate_id,
         civicrm_contribution_recur.id                           AS rcur_id,
         civicrm_contribution_recur.start_date                   AS start_date,
@@ -120,7 +121,6 @@ class CRM_Sepa_Page_MandateTab extends CRM_Core_Page {
       WHERE civicrm_sdd_mandate.contact_id = %1
         AND civicrm_sdd_mandate.type = 'RCUR'
         AND civicrm_sdd_mandate.entity_table = 'civicrm_contribution_recur'
-      GROUP BY civicrm_sdd_mandate.id
       ORDER BY civicrm_contribution_recur.start_date DESC, civicrm_sdd_mandate.id DESC;";
 
     $mandate_ids = array();
@@ -170,6 +170,7 @@ class CRM_Sepa_Page_MandateTab extends CRM_Core_Page {
       $fail_sequence = "
         SELECT
          civicrm_sdd_mandate.id AS mandate_id,
+         civicrm_contribution.receive_date,
          GROUP_CONCAT(
           IF(civicrm_contribution.contribution_status_id IN (1,2,5), '0', '1')
           SEPARATOR '')        AS fail_sequence
@@ -180,7 +181,7 @@ class CRM_Sepa_Page_MandateTab extends CRM_Core_Page {
           AND civicrm_sdd_mandate.type = 'RCUR'
           AND civicrm_sdd_mandate.entity_table = 'civicrm_contribution_recur'
           AND civicrm_contribution.id IS NOT NULL
-        GROUP BY civicrm_sdd_mandate.id
+        GROUP BY civicrm_sdd_mandate.id, civicrm_contribution.receive_date
         ORDER BY civicrm_contribution.receive_date;";
       $fail_query = CRM_Core_DAO::executeQuery($fail_sequence);
       while ($fail_query->fetch()) {
